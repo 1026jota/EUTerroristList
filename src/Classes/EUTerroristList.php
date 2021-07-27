@@ -1,5 +1,7 @@
 <?php
+
 namespace Jota\EUTerroristList\Classes;
+
 use Goutte\Client;
 
 class EUTerroristList
@@ -16,7 +18,7 @@ class EUTerroristList
      */
     private array $result;
 
-    public function initResult() : void
+    public function initResult(): void
     {
         $this->result['is_registered'] = false;
         $this->result['total_results'] = 0;
@@ -25,11 +27,11 @@ class EUTerroristList
 
     /**
      * Return a search result in json form
-     * @return string
+     * @return array
      */
-    public function getResult() : string
+    public function getResult(): array
     {
-        return json_encode($this->result);
+        return $this->result;
     }
 
     /**
@@ -37,18 +39,18 @@ class EUTerroristList
      * @param $name : name to search
      * @return void
      */
-    public function searchByName(string $name) : void
+    public function searchByName(string $name): void
     {
         $this->initResult();
         $this->name = strtolower($name);
-        
+
         $client = new Client();
         $crawler = $client->request('GET', config('euterrorist.url'));
         $list = $crawler->filter('[id="L_2021043ES.01000301"]')->first();
-        $list->filter('table > tbody > tr > td > span')->each(function($row){
+        $list->filter('table > tbody > tr > td > span')->each(function ($row) {
             $split = explode('nacido', strtolower($row->text()));
             $name = $this->makeName($split);
-            if(strpos($name, $this->name) !== false){
+            if (strpos($name, $this->name) !== false) {
                 $info = [
                     'name' => $this->name,
                 ];
@@ -74,11 +76,11 @@ class EUTerroristList
         $list->filter('table > tbody > tr > td > span')->each(function ($row) {
             $split = explode('nacido', strtolower($row->text()));
             $name = $this->makeName($split);
-                $info = [
-                    'name' => $name,
-                ];
-                $this->result['total_results'] += 1;
-                array_push($this->result['result'], $info); 
+            $info = [
+                'name' => $name,
+            ];
+            $this->result['total_results'] += 1;
+            array_push($this->result['result'], $info);
         });
     }
 
@@ -86,11 +88,10 @@ class EUTerroristList
      * This function make a name from html
      * @return string
      */
-    private function makeName(array $split) : string
+    private function makeName(array $split): string
     {
         $split[0] = str_replace(',', '', $split[0]);
         $name = explode('(', $split[0]);
         return $name[0];
     }
-
 }
